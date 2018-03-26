@@ -154,10 +154,10 @@ def run_get_map(dataset,model_name,test_info):
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
 
-    ds_prefix = 'yolo-voc-bbfix-608_'
-    ds_test = 'yolo-voc-bbfix-608'
+    ds_prefix = 'yolo-voc-800-multiscale_'
+    ds_test = 'nl-yolo-voc-800-multiscale'
     #DataSets = [('yolo-voc_40000', 'val'),('yolo-voc_40000', 'train')]
-    DataSets = make_dataset(prefix=ds_prefix,test_info=ds_test)
+    DataSets = make_dataset(prefix=ds_prefix,test_info=ds_test,iterations=[36000])
 
     # get predict results
     for ds in DataSets:

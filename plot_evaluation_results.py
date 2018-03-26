@@ -256,28 +256,28 @@ def plot_multi_cls_ap_trends(ap_data_dict,title,xlabel,ylabel,xticks,xticklabels
 # Main
 # #####################
 if __name__ == "__main__":
-
+    '''
     # {(model_name,dataset_name),...,...}
     #modelSets = [('yolo-voc_20000'), ('yolo-voc_40000')]
-    modelSets = make_dataset_model_only(prefix='yolo-voc-bbfix-608_',test_info='yolo-voc-bbfix-608')
+    modelSets = make_dataset_model_only(prefix='yolo-voc-800_',test_info='nl-yolo-voc-800')
 
     # plot evaluation results
     main_plot_eval_results_of_models(modelSets)
 
 
     exit()
-
+    '''
     ######################################
     # diff experiment compare
-    prefixs = ['yolo_','yolo-voc-608_',
-               'yolo-voc_','yolo-voc-bbfix_',
-               'yolo-voc-bbfix-608_']
-    test_infos = ['yolo','yolo-voc-608',
-                  'yolo-voc-test608','yolo-voc-bbfix-test608',
-                  'yolo-voc-bbfix-608']
-    legend_names = ['yolo_coco','yolo_imagenet_608',
-                    'yolo_imagenet_test608','yolo-imagenet-bbfix-test608',
-                    'yolo_imagenet_bbfix_608']
+    prefixs = ['yolo-voc-800_','yolo-voc-608_',
+               'yolo-voc_','yolo-voc-800-multiscale_',
+               'yolo-voc-608_']
+    test_infos = ['nl-yolo-voc-800','yolo-voc-608',
+                  'yolo-voc-test608','nl-yolo-voc-800-multiscale',
+                  'nl-yolo-voc-608']
+    legend_names = ['nl-yolo_imagenet_800','yolo_imagenet_608',
+                    'yolo_imagenet_test608','yolo-imagenet-800-multiscale',
+                    'nl-yolo_imagenet_608']
 
     tot_ap_dict = {}
     tot_cls_ap_dict = {}
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         xticks = ''
         xticklabels = ''
         #
-        modelsets = make_dataset_model_only(prefix=prefixs[idx],test_info=item)
+        modelsets = make_dataset_model_only(prefix=prefixs[idx],test_info=item,iterations=[10000,36000])
         #
         ap_dict,cls_ap_dict,xticks,xticklabels = main_plot_eval_results_of_models(modelsets,should_plot=False)
 

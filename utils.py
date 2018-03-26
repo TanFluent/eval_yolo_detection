@@ -1,6 +1,9 @@
 import numpy as np
 import os
 import cv2
+import glob
+
+import pdb
 
 # ################################
 # DataSet
@@ -8,8 +11,9 @@ import cv2
 train_info = 'models_4w_lr_0.001'
 test_info = 'yolo-voc'
 prefix_default = 'yolo-voc_'
-iterations_default = [2000,5000,10000,20000,25000,30000,34000,36000,38000,40000]
-#iterations_default = [2000,5000,10000,20000,25000,30000,34000]
+#iterations_default = [2000,5000,10000,20000,25000,30000,34000,36000,38000,40000]
+#iterations_default = [2000,5000,10000,20000,25000,30000,34000,36000,38000]
+iterations_default = [25000]
 sets_default = ['train','val']
 
 def make_dataset(prefix=prefix_default,sets=sets_default,iterations=iterations_default,train_info=train_info,test_info=test_info):
@@ -89,9 +93,26 @@ def plot_bb_on_img(im,bb,color,thickness=2,info=''):
     return im
 
 # ################################
+# Utils
+# ################################
+def get_file_name_in_dir(in_dir,out_path,suffix='*.jpg'):
+    filelist = glob.glob(in_dir+suffix)
+    #pdb.set_trace()
+    f = open(out_path,'w')
+    for line in filelist:
+        name = line.split('/')[-1].split('.')[0]
+        f.write(name+'\n')
+    f.close()
+
+    return 0
+
+
+# ################################
 # Test
 # ################################
 if __name__ == "__main__":
+    imgdir = '/home/tfl/workspace/dataSet/GoodsID/images-raw/yogurt/'
+    get_file_name_in_dir(imgdir,imgdir+'yogurt.txt')
     pass
 
 

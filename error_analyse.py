@@ -242,7 +242,7 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
 if __name__ == "__main__":
 
     # {(model_name,dataset_name),...,...}
-    DataSets = [('yolo-voc-608_40000', 'val', 'yolo-voc-608')]
+    DataSets = [('yolo-voc-800_20000', 'train', 'nl-yolo-voc-800')]
 
     # get predict results
     for ds in DataSets:

@@ -185,12 +185,12 @@ def run_test_on_mix(dataset,model_name,train_info,test_info,thres=0.001):
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
     #DataSets = [('yolo-voc_40000', 'val'),('yolo-voc_40000', 'train')]
-    ds_prefix = 'yolo-voc-bbfix-608_'
-    ds_train = 'models_4w_lr_0.001_608x608_bbfix'
-    ds_test = 'yolo-voc-bbfix-608'
+    ds_prefix = 'yolo-voc-800-multiscale_'
+    ds_train = 'nl_models_4w_lr_0.001_800x800_multiscale'
+    ds_test = 'nl-yolo-voc-800-multiscale'
 
-    DataSets = make_dataset(prefix=ds_prefix, train_info=ds_train, test_info=ds_test)
-    #DataSets = make_dataset(prefix=ds_prefix,train_info=ds_train,test_info=ds_test,iterations=[25000],sets=['val','train'])
+    #DataSets = make_dataset(prefix=ds_prefix, train_info=ds_train, test_info=ds_test)
+    DataSets = make_dataset(prefix=ds_prefix,train_info=ds_train,test_info=ds_test,sets=['val','train'],iterations=[36000])
     #DataSets = [('yolo_40000','test',ds_train,ds_test)]
 
     # get predict results
