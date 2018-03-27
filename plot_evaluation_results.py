@@ -4,12 +4,11 @@ import pdb
 from utils import *
 import matplotlib.pyplot as plt
 
-# working dir
-wd = '/home/tfl/workspace/project/YI/goodsid/'
-# dataSets dir
-dataset_dir = '/home/tfl/workspace/dataSet/GoodsID'
-# classes
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
+from conf import *
+
+# #############
+# Functions
+# #############
 
 
 def main_plot_eval_results_of_models(model_infos,should_plot=True):

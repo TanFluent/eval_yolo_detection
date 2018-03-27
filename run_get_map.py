@@ -7,14 +7,11 @@ import pdb
 import evaluation as my_eval
 
 
-# working dir
-wd = '/home/tfl/workspace/project/YI/goodsid/'
-# dataSets dir
-dataset_dir = '/home/tfl/workspace/dataSet/GoodsID'
-# classes
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
+from conf import *
 
-
+# #############
+# Functions
+# #############
 def run_get_map(dataset,model_name,test_info):
     '''
     run testing on a "dataset"
@@ -31,7 +28,7 @@ def run_get_map(dataset,model_name,test_info):
     img_names = [x.strip() for x in img_names]
 
     # --get predict results
-    predict_results_first_lever_dir = os.path.join(dataset_dir, 'predict', test_info)
+    predict_results_first_lever_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_first_lever_dir):
         print("Folder not exist!")
         print predict_results_first_lever_dir

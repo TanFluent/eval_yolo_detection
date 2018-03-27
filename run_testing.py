@@ -1,3 +1,5 @@
+#coding: utf-8
+
 import os,sys
 from darknet import *
 import cv2
@@ -5,12 +7,7 @@ import pdb
 from utils import *
 import multiprocessing as mp
 
-# working dir
-wd = '/home/tfl/workspace/project/YI/goodsid/'
-# dataSets dir
-dataset_dir = '/home/tfl/workspace/dataSet/GoodsID'
-# classes
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
+from conf import *
 
 # #############
 # Functions
@@ -23,15 +20,16 @@ def run_test(dataset,model_name,train_info,test_info,thres=0.001):
     :param model_name:
     :return:
     '''
-
-    model_cfg_path = os.path.join(wd,'cfg','%s.cfg'%test_info)
-    model_weights_path = os.path.join(wd,'%s'%train_info,'%s.weights'%model_name)
-    meta_path = os.path.join(wd,'cfg','goodid.data')
+    #pdb.set_trace()
+    
+    model_cfg_path = os.path.join(wd,'material','cfg','%s.cfg'%test_info)
+    model_weights_path = os.path.join(wd,'material','yolo_models','%s'%train_info,'%s.weights'%model_name)
+    meta_path = os.path.join(wd,'material','cfg','%s'%data_info)
 
     dataset_file = os.path.join(dataset_dir, 'ImageSets', 'Main', '%s.txt'%dataset)
-
+    
     # predict results
-    predict_results_dir = os.path.join(dataset_dir, 'predict', test_info)
+    predict_results_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_dir):
         os.mkdir(predict_results_dir)
 
@@ -184,14 +182,23 @@ def run_test_on_mix(dataset,model_name,train_info,test_info,thres=0.001):
 
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
-    #DataSets = [('yolo-voc_40000', 'val'),('yolo-voc_40000', 'train')]
-    ds_prefix = 'yolo-voc-800-multiscale_'
-    ds_train = 'nl_models_4w_lr_0.001_800x800_multiscale'
-    ds_test = 'nl-yolo-voc-800-multiscale'
+    # 模型文件(.weight)前缀
+    ds_prefix = 'yolo-voc-800_'
+    # 模型文件(.weight)存储路径
+    ds_train = 'missfresh-yolo-voc-800'
+    # 本次实验的名称(同一个模型可以用来做不同类型的实验)
+    ds_test = 'missfresh-yolo-voc-800'
 
-    #DataSets = make_dataset(prefix=ds_prefix, train_info=ds_train, test_info=ds_test)
-    DataSets = make_dataset(prefix=ds_prefix,train_info=ds_train,test_info=ds_test,sets=['val','train'],iterations=[36000])
-    #DataSets = [('yolo_40000','test',ds_train,ds_test)]
+
+    # perform object detection on these dataSets
+    sets = ['val','train']
+    # checkpoints of models
+    checkpoints = [15000]
+
+    # Data information
+    DataSets = make_dataset(prefix=ds_prefix,train_info=ds_train,test_info=ds_test,sets=sets,iterations=checkpoints)
+
+    #pdb.set_trace()
 
     # get predict results
     for ds in DataSets:
@@ -199,10 +206,12 @@ if __name__ == "__main__":
         dataset_name = ds[1]
         train_info = ds[2]
         test_info = ds[3]
-
+    
         if dataset_name=='test':
+            #针对未标记的testSet
             sub_process = mp.Process(target=run_test_on_mix,args=(dataset_name,model_name,train_info,test_info))
         else:
+            #针对已标记的trainSet/valSet
             sub_process = mp.Process(target=run_test, args=(dataset_name, model_name,train_info,test_info))
         sub_process.start()
         sub_process.join()

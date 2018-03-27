@@ -3,13 +3,15 @@ from darknet import *
 import cv2
 import numpy as np
 import pdb
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
-# working dir
-wd = '/home/tfl/workspace/project/YI/goodsid/'
-# dataSets dir
-dataset_dir = '/home/tfl/workspace/dataSet/GoodsID'
-# classes
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
+
+from conf import *
+
+# #############
+# Functions
+# #############
 
 colors = ['r','g','b','c']
 
@@ -49,7 +51,7 @@ def main_plot_bb(dataset,model_name,test_info):
     img_names = [x.strip() for x in img_names]
 
     # --get predict results
-    predict_results_first_lever_dir = os.path.join(dataset_dir, 'predict', test_info)
+    predict_results_first_lever_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_first_lever_dir):
         print("Folder not exist!")
         print predict_results_first_lever_dir
@@ -105,20 +107,34 @@ def main_plot_bb(dataset,model_name,test_info):
         plot_bb(im_pred, pred_boxes, pred_class_ids, pred_scores,thres=0.2)
         im_pred = cv2.resize(im_pred, (im.shape[1] / 2, im.shape[0] / 2), interpolation=cv2.INTER_CUBIC)
 
-        #m --plot
+        # --plot
         im_final = np.hstack((im_gt,im_pred))
         #win_name = '%s-%s-%s' % (model_name, dataset_name, name)
-        win_name = '%s-%s' % (model_name, dataset_name)
+        
+        '''
+        
+        # --OPENCV plot
+        win_name = '%s-%s' % (model_name, dataset)
         cv2.imshow(win_name,im_final)
         cv2.moveWindow(win_name,10,10)
-
+        
         k = cv2.waitKey(0)
         if k==ord('q'):
             cv2.destroyAllWindows()
             break
         elif k==ord('c'):
             cv2.destroyWindow(win_name)
-
+        '''
+        # --matplotlib plot
+        plt.imshow(im_final)
+        #plt.show()
+        #pdb.set_trace()
+        
+        # --save image
+        save_dir = os.path.join(wd,'results', 'tmp')
+        save_path = os.path.join(save_dir,'%s.jpg'%name)
+        plt.savefig(save_path)
+        pdb.set_trace()
 
 def main_plot_bb_on_mix(dataset,model_name):
     dataset_file = os.path.join(dataset_dir, 'ImageSets', 'Main', '%s.txt' % dataset)

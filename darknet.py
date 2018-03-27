@@ -34,8 +34,8 @@ class METADATA(Structure):
                 ("names", POINTER(c_char_p))]
 
     
-lib = CDLL("/home/tfl/workspace/project/darknet/libdarknet.so", RTLD_GLOBAL)
-#lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
+#lib = CDLL("/mnt/lvmhdd/tanfulun/workspaces/Project/darknet-tfl/libdarknet.so", RTLD_GLOBAL)
+lib = CDLL("/mnt/lvmhdd/tanfulun/workspaces/Project/eval_yolo_detection/libdarknet/libdarknet.so", RTLD_GLOBAL)
 #lib = CDLL("libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
