@@ -1,0 +1,5 @@
+classes=18
+train=/mnt/lvmhdd/tanfulun/workspaces/Data/MissFreshSmartShelf_Exp/train.txt
+val=/mnt/lvmhdd/tanfulun/workspaces/Data/MissFreshSmartShelf_Exp/val.txt
+names=/mnt/lvmhdd/tanfulun/workspaces/Project/darknet-tfl/tfl/MissFreshSmartShelf/goods.names
+backup=/mnt/lvmhdd/tanfulun/workspaces/Project/darknet-tfl/tfl/MissFreshSmartShelf/backup
