@@ -1,5 +1,4 @@
 import os,sys
-from darknet import *
 import cv2
 import numpy as np
 import pdb
@@ -15,7 +14,7 @@ from conf import *
 
 colors = ['r','g','b','c']
 
-def plot_bb(im,bb,cls,scores=[],thres=0.7):
+def plot_bb(im,bb,cls,scores=[],thres=0.7,textSize=4,textThickness=8):
     h,w,c = im.shape
 
     for idx,box in enumerate(bb):
@@ -38,7 +37,7 @@ def plot_bb(im,bb,cls,scores=[],thres=0.7):
         y2 = int(min([h, (c_y + 0.5 * b_h) ]))
 
         cv2.rectangle(im,(x1,y1),(x2,y2),(0,0,255),2)
-        cv2.putText(im,'%s'%(classes[cls[idx]]),(x1,y1),cv2.FONT_HERSHEY_SIMPLEX,1,(0,200,255),thickness=2)
+        cv2.putText(im,'%s'%(classes[cls[idx]]),(x1,int(y1*1.1)),cv2.FONT_HERSHEY_SIMPLEX,textSize,(0,200,255),thickness=textThickness)
 
     return im,thres
 
@@ -109,9 +108,11 @@ def main_plot_bb(dataset,model_name,test_info):
 
         # --plot
         im_final = np.hstack((im_gt,im_pred))
+
+        im_final = cv2.resize(im_final, (im_final.shape[1] / 2, im_final.shape[0] / 2), interpolation=cv2.INTER_CUBIC)
+
         #win_name = '%s-%s-%s' % (model_name, dataset_name, name)
-        
-        '''
+
         
         # --OPENCV plot
         win_name = '%s-%s' % (model_name, dataset)
@@ -124,19 +125,20 @@ def main_plot_bb(dataset,model_name,test_info):
             break
         elif k==ord('c'):
             cv2.destroyWindow(win_name)
-        '''
+
+
         # --matplotlib plot
-        plt.imshow(im_final)
+        #plt.imshow(im_final)
         #plt.show()
         #pdb.set_trace()
         
         # --save image
-        save_dir = os.path.join(wd,'results', 'tmp')
-        save_path = os.path.join(save_dir,'%s.jpg'%name)
-        plt.savefig(save_path)
-        pdb.set_trace()
+        #save_dir = os.path.join(wd,'results', 'tmp')
+        #save_path = os.path.join(save_dir,'%s.jpg'%name)
+        #plt.savefig(save_path)
+        #pdb.set_trace()
 
-def main_plot_bb_on_mix(dataset,model_name):
+def main_plot_bb_on_testset(dataset,model_name,test_info):
     dataset_file = os.path.join(dataset_dir, 'ImageSets', 'Main', '%s.txt' % dataset)
     f = open(dataset_file)
     img_names = f.readlines()
@@ -145,20 +147,24 @@ def main_plot_bb_on_mix(dataset,model_name):
     img_names = [x.strip() for x in img_names]
 
     # --get predict results
-    predict_results_upper_dir = os.path.join(dataset_dir, 'predict', model_name)
-    if not os.path.exists(predict_results_upper_dir):
+    predict_results_first_lever_dir = os.path.join(wd, 'results', 'predict', test_info)
+    if not os.path.exists(predict_results_first_lever_dir):
         print("Folder not exist!")
-        print predict_results_upper_dir
+        print predict_results_first_lever_dir
         exit()
 
-    predict_results_dir = os.path.join(predict_results_upper_dir, dataset)
+    predict_results_second_lever_dir = os.path.join(predict_results_first_lever_dir, model_name)
+    if not os.path.exists(predict_results_second_lever_dir):
+        os.mkdir(predict_results_second_lever_dir)
+
+    predict_results_dir = os.path.join(predict_results_second_lever_dir, dataset)
     if not os.path.exists(predict_results_dir):
         print("Folder not exist!")
         print predict_results_dir
         exit()
 
     # --get Images
-    raw_img_dir = os.path.join(dataset_dir, 'images-raw','mix')
+    raw_img_dir = os.path.join(dataset_dir, 'JPEGImages')
 
     for name in img_names:
         print name
@@ -180,12 +186,13 @@ def main_plot_bb_on_mix(dataset,model_name):
         #pdb.set_trace()
 
         im_pred = im.copy()
-        plot_bb(im_pred, pred_boxes, pred_class_ids, pred_scores,thres=0.2)
+        plot_bb(im_pred, pred_boxes, pred_class_ids, pred_scores,thres=0.2,textSize=2,textThickness=4)
         im_pred = cv2.resize(im_pred, (im.shape[1] / 2, im.shape[0] / 2), interpolation=cv2.INTER_CUBIC)
 
         #m --plot
         im_final = im_pred
-        win_name = '%s-%s-%s' % (model_name, dataset_name, name)
+
+        win_name = '%s-%s' % (model_name, dataset_name)
         cv2.imshow(win_name,im_final)
         cv2.moveWindow(win_name,10,10)
 
@@ -199,7 +206,7 @@ def main_plot_bb_on_mix(dataset,model_name):
 if __name__ == "__main__":
 
     # {(model_name,dataset_name),...,...}
-    DataSets = [('yolo-voc-800-multiscale_36000', 'val', 'nl-yolo-voc-800-multiscale')]
+    DataSets = [('yolo-voc-800_15000', 'test', 'missfresh-yolo-voc-800')]
 
     # get predict results
     for ds in DataSets:
@@ -208,6 +215,6 @@ if __name__ == "__main__":
         test_info = ds[2]
 
         if dataset_name=='test':
-            main_plot_bb_on_mix(dataset_name, model_name)
+            main_plot_bb_on_testset(dataset_name, model_name,test_info)
         else:
             main_plot_bb(dataset_name, model_name,test_info)

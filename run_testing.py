@@ -100,7 +100,7 @@ def run_test(dataset,model_name,train_info,test_info,thres=0.001):
 
         result_f.close()
 
-def run_test_on_mix(dataset,model_name,train_info,test_info,thres=0.001):
+def run_test_on_testset(dataset,model_name,train_info,test_info,thres=0.001):
     '''
     run testing on a "dataset"
     :param dataset:
@@ -108,14 +108,14 @@ def run_test_on_mix(dataset,model_name,train_info,test_info,thres=0.001):
     :return:
     '''
 
-    model_cfg_path = os.path.join(wd,'cfg','%s.cfg'%test_info)
-    model_weights_path = os.path.join(wd,train_info,'%s.weights'%model_name)
-    meta_path = os.path.join(wd,'cfg','goodid.data')
+    model_cfg_path = os.path.join(wd, 'material', 'cfg', '%s.cfg' % test_info)
+    model_weights_path = os.path.join(wd, 'material', 'yolo_models', '%s' % train_info, '%s.weights' % model_name)
+    meta_path = os.path.join(wd, 'material', 'cfg', '%s' % data_info)
 
     dataset_file = os.path.join(dataset_dir, 'ImageSets', 'Main', '%s.txt'%dataset)
 
     # predict results
-    predict_results_dir = os.path.join(dataset_dir, 'predict', test_info)
+    predict_results_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_dir):
         os.mkdir(predict_results_dir)
 
@@ -137,7 +137,7 @@ def run_test_on_mix(dataset,model_name,train_info,test_info,thres=0.001):
     img_paths = []
     img_labels_path = []
     for name in img_names_list:
-        path = os.path.join(dataset_dir, 'images-raw','mix','%s.jpg'%name)
+        path = os.path.join(dataset_dir, 'JPEGImages','%s.jpg'%name)
         if not os.path.isfile(path):
             print ("file missing!")
             print (path)
@@ -191,7 +191,8 @@ if __name__ == "__main__":
 
 
     # perform object detection on these dataSets
-    sets = ['val','train']
+    #sets = ['val','train']
+    sets = ['test']
     # checkpoints of models
     checkpoints = [15000]
 
@@ -206,10 +207,12 @@ if __name__ == "__main__":
         dataset_name = ds[1]
         train_info = ds[2]
         test_info = ds[3]
-    
+
+        #run_test_on_testset(dataset_name,model_name,train_info,test_info)
+
         if dataset_name=='test':
             #针对未标记的testSet
-            sub_process = mp.Process(target=run_test_on_mix,args=(dataset_name,model_name,train_info,test_info))
+            sub_process = mp.Process(target=run_test_on_testset,args=(dataset_name,model_name,train_info,test_info))
         else:
             #针对已标记的trainSet/valSet
             sub_process = mp.Process(target=run_test, args=(dataset_name, model_name,train_info,test_info))

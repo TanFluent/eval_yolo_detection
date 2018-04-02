@@ -2,28 +2,32 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-wd = '/home/tfl/workspace/dataSet/GoodsID/'
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
-MAX_BB_NUMBER = 170
+from conf import *
 
-def main():
+# #############
+# Functions
+# #############
+
+MAX_BB_NUMBER = 60
+
+def run_analyse():
     #
     bb_bin = {}
     # get label file
-    label_dir = os.path.join(wd,'dk_labels')
+    label_dir = os.path.join(dataset_dir,'dk_labels')
     if not os.path.exists(label_dir):
         print ('label file missing!')
         exit()
 
     # get dataset
-    dataset_dir = os.path.join(wd,'ImageSets','Main')
-    if not os.path.exists(dataset_dir):
+    imageset_dir = os.path.join(dataset_dir,'ImageSets','Main')
+    if not os.path.exists(imageset_dir):
         print ('dataset dir missing!')
         exit()
 
     datasets = ['train','val']
     for ds in datasets:
-        ds_file = os.path.join(dataset_dir,'%s.txt'%ds)
+        ds_file = os.path.join(imageset_dir,'%s.txt'%ds)
         if not os.path.exists(ds_file):
             print ('%s.txt file missing!'%ds)
             exit()
@@ -92,4 +96,4 @@ def main():
     pass
 
 if __name__=="__main__":
-    main()
+    run_analyse()

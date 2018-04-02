@@ -1,3 +1,5 @@
+#coding: utf-8
+
 import os,sys
 import cv2
 import numpy as np
@@ -6,12 +8,11 @@ import evaluation as my_eval
 
 import pdb
 
-# working dir
-wd = '/home/tfl/workspace/project/YI/goodsid/'
-# dataSets dir
-dataset_dir = '/home/tfl/workspace/dataSet/GoodsID'
-# classes
-classes = ['beer','beverage','instantnoodle','redwine','snack','springwater','yogurt']
+from conf import *
+
+# #############
+# Functions
+# #############
 
 colors = ['r','g','b','c']
 
@@ -105,7 +106,7 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
     img_names = [x.strip() for x in img_names]
 
     # --get predict results
-    predict_results_first_lever_dir = os.path.join(dataset_dir, 'predict', test_info)
+    predict_results_first_lever_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_first_lever_dir):
         print("Folder not exist!")
         print predict_results_first_lever_dir
@@ -134,6 +135,10 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
     tot_fp_cls = 0
     tot_fp_bb = 0
     tot_fp_redun = 0
+
+    tot_pt_bb_num = 0
+    tot_gt_bb_num = 0
+
     for name in img_names:
         #pdb.set_trace()
         # --get prediction
@@ -188,6 +193,9 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
         tot_fp_cls = tot_fp_cls + len(fp_mismatch_cls)
         tot_fp_redun = tot_fp_redun + len(fp_redun_bb)
 
+        tot_pt_bb_num = tot_pt_bb_num + len(pred_boxes)
+        tot_gt_bb_num = tot_gt_bb_num + len(gt_boxes)
+
         print("#%s -precise:%f  -recall:%f" % (name,precise, recall))
         print("%s -gt:%d  -pred:%d" % (name, len(gt_boxes), len(pred_boxes)))
         print("%s -fn:%d  -fp:%d" % (name, len(fn_gt_idx), (len(fp_mismatch_cls)+len(fp_mismatch_bb)+len(fp_redun_bb))))
@@ -202,20 +210,20 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
             raw_img_path = os.path.join(raw_img_dir,'%s.jpg'%name)
             im = cv2.imread(raw_img_path)
             # plot gt
-            im = plot_bb_on_img(im, gt_boxes, (255, 255, 255), info='',thickness=1)
+            im = plot_bb_on_img(im, gt_boxes, (255, 255, 255), info='',textThickness=1)
             # plot fn
-            im = plot_bb_on_img(im,gt_boxes[fn_gt_idx],(255,255,255),info='fn',thickness=4)
+            im = plot_bb_on_img(im,gt_boxes[fn_gt_idx],(255,255,255),info='fn',textThickness=8,bbThickness=8)
             # plot fp_cls
-            im = plot_bb_on_img(im, pred_boxes[fp_mismatch_cls], (255, 0, 0), info='fp_cls',thickness=4)
+            im = plot_bb_on_img(im, pred_boxes[fp_mismatch_cls], (255, 0, 0), info='fp_cls',textThickness=4,bbThickness=8)
             # plot fp_bb
-            im = plot_bb_on_img(im, pred_boxes[fp_mismatch_bb], (0, 255, 0), info='fp_bb', thickness=4)
+            im = plot_bb_on_img(im, pred_boxes[fp_mismatch_bb], (0, 255, 0), info='fp_bb', textThickness=4,bbThickness=8)
             # plot fp_redun
-            im = plot_bb_on_img(im, pred_boxes[fp_redun_bb], (0, 0, 255), info='fp_redun', thickness=4)
+            im = plot_bb_on_img(im, pred_boxes[fp_redun_bb], (0, 0, 255), info='fp_redun', textThickness=4,bbThickness=8)
 
-            cv2.putText(im,'-precise:%f -recall:%f'%(precise,recall),(10,50),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0,255), thickness=4)
+            cv2.putText(im,'-precise:%f -recall:%f'%(precise,recall),(10,50),cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255), thickness=4)
 
             im_resize = im.copy()
-            im_resize = cv2.resize(im_resize, (int(im.shape[1] / 2), int(im.shape[0] / 2.2)), interpolation=cv2.INTER_CUBIC)
+            im_resize = cv2.resize(im_resize, (int(im.shape[1] / 4), int(im.shape[0] / 4)), interpolation=cv2.INTER_CUBIC)
 
             win_name = '%s-%s' % (model_name, dataset_name)
             cv2.imshow(win_name, im_resize)
@@ -237,21 +245,34 @@ def main_error_analyse(dataset,model_name,test_info,conf_thres=0.2,should_show=F
     tot_fp = tot_fp_cls + tot_fp_bb + tot_fp_redun
 
     print("avg_precise:%f  avg_recall:%f"%(avg_precise,avg_recall))
+    print("tot_pt_bb:%d  tot_gt_bb:%d"%(tot_pt_bb_num,tot_gt_bb_num))
     print("fn:%d; fp:%d; fp_cls:%d; fp_bb:%d; fp_redun:%d;"%(tot_fn,tot_fp,tot_fp_cls,tot_fp_bb,tot_fp_redun))
 
 if __name__ == "__main__":
 
     # {(model_name,dataset_name),...,...}
-    DataSets = [('yolo-voc-800_20000', 'train', 'nl-yolo-voc-800')]
+    # 模型文件(.weight)前缀
+    ds_prefix = 'yolo-voc-800_'
+
+    # 本次实验的名称(同一个模型可以用来做不同类型的实验)
+    ds_test = 'missfresh-yolo-voc-800'
+
+    # perform object detection on these dataSets
+    sets = ['val']
+
+    # checkpoints of models
+    checkpoints = [15000]
+
+    DataSets = make_dataset(prefix=ds_prefix, test_info=ds_test, sets=sets, iterations=checkpoints)
 
     # get predict results
     for ds in DataSets:
         model_name = ds[0]
         dataset_name = ds[1]
-        test_info = ds[2]
+        test_info = ds[3]
 
         if dataset_name=='test':
             #main_plot_bb_on_mix(dataset_name, model_name)
             pass
         else:
-            main_error_analyse(dataset_name, model_name,test_info,conf_thres=0.2,should_show=True)
+            main_error_analyse(dataset_name, model_name,test_info,conf_thres=0.2,should_show=False)

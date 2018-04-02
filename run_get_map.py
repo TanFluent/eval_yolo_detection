@@ -1,3 +1,5 @@
+#coding: utf-8
+
 import os,sys
 from utils import *
 import cv2
@@ -151,10 +153,19 @@ def run_get_map(dataset,model_name,test_info):
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
 
-    ds_prefix = 'yolo-voc-800-multiscale_'
-    ds_test = 'nl-yolo-voc-800-multiscale'
-    #DataSets = [('yolo-voc_40000', 'val'),('yolo-voc_40000', 'train')]
-    DataSets = make_dataset(prefix=ds_prefix,test_info=ds_test,iterations=[36000])
+    # 模型文件(.weight)前缀
+    ds_prefix = 'yolo-voc-800_'
+
+    # 本次实验的名称(同一个模型可以用来做不同类型的实验)
+    ds_test = 'missfresh-yolo-voc-800'
+
+    # perform object detection on these dataSets
+    sets = ['val', 'train']
+
+    # checkpoints of models
+    checkpoints = [15000]
+
+    DataSets = make_dataset(prefix=ds_prefix,test_info=ds_test,sets=sets,iterations=checkpoints)
 
     # get predict results
     for ds in DataSets:
