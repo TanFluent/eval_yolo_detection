@@ -10,26 +10,27 @@ from conf import *
 # Functions
 # #############
 
+def main_plot_eval_results_of_models(model_infos,should_plot=True,dataset=['train','val']):
+    '''
+    plot curves of MAPs
 
-def main_plot_eval_results_of_models(model_infos,should_plot=True):
-    #model_names = [x[0] for x in model_infos]
-    #test_info = [x[1] for x in model_infos]
+    :param model_infos:
+    :param should_plot:
+    :param dataset:
+    :return:
+    '''
 
-    eval_res_dir = os.path.join(dataset_dir,'predict')
-    dataset = ['train','val']
+    eval_res_dir = os.path.join(wd,'results', 'predict')
 
     model_num = len(model_infos)
     dataset_num = len(dataset)
 
     mAPs = np.zeros((model_num,dataset_num))
     fg_bg_APs = np.zeros((model_num,dataset_num))
-    beer_APs = np.zeros((model_num,dataset_num))
-    beverage_APs = np.zeros((model_num,dataset_num))
-    instantnoodle_APs = np.zeros((model_num,dataset_num))
-    redwine_APs = np.zeros((model_num,dataset_num))
-    snack_APs = np.zeros((model_num,dataset_num))
-    springwater_APs = np.zeros((model_num,dataset_num))
-    yogurt_APs = np.zeros((model_num,dataset_num))
+
+    subcls_APs = {}
+    for idx,cls in enumerate(classes):
+        subcls_APs[cls] = np.zeros((model_num,dataset_num))
 
     for idx,name in enumerate(model_infos):
         if not os.path.exists(os.path.join(eval_res_dir,name[1],name[0])):
@@ -47,11 +48,12 @@ def main_plot_eval_results_of_models(model_infos,should_plot=True):
         train_eval_path = os.path.join(model_eval_res_dir,'train_mAP.txt')
         val_eval_path = os.path.join(model_eval_res_dir, 'val_mAP.txt')
 
-        #
+        # get train MAP from train_mAP.txt
         train_f = open(train_eval_path,'r')
         train_data = train_f.read().strip().split('\n')
         train_f.close()
 
+        # get val MAP from val_mAP.txt
         val_f = open(val_eval_path, 'r')
         val_data = val_f.read().strip().split('\n')
         val_f.close()
@@ -64,20 +66,12 @@ def main_plot_eval_results_of_models(model_infos,should_plot=True):
                 mAPs[idx,0] = v
             elif k=='fg_bg_AP':
                 fg_bg_APs[idx,0] = v
-            elif k=='beer':
-                beer_APs[idx,0] = v
-            elif k=='beverage':
-                beverage_APs[idx,0] = v
-            elif k=='instantnoodle':
-                instantnoodle_APs[idx,0] = v
-            elif k=='redwine':
-                redwine_APs[idx,0] = v
-            elif k=='snack':
-                snack_APs[idx,0] = v
-            elif k=='springwater':
-                springwater_APs[idx,0] = v
-            elif k=='yogurt':
-                yogurt_APs[idx,0] = v
+            else:
+                if k in classes:
+                    subcls_APs[k][idx,0] = v
+                else:
+                    print("error class name:%s"%k)
+                    exit()
         # val
         for line in val_data:
             k = line.split(':')[0]
@@ -86,27 +80,19 @@ def main_plot_eval_results_of_models(model_infos,should_plot=True):
                 mAPs[idx, 1] = v
             elif k == 'fg_bg_AP':
                 fg_bg_APs[idx, 1] = v
-            elif k == 'beer':
-                beer_APs[idx, 1] = v
-            elif k == 'beverage':
-                beverage_APs[idx, 1] = v
-            elif k == 'instantnoodle':
-                instantnoodle_APs[idx, 1] = v
-            elif k == 'redwine':
-                redwine_APs[idx, 1] = v
-            elif k == 'snack':
-                snack_APs[idx, 1] = v
-            elif k == 'springwater':
-                springwater_APs[idx, 1] = v
-            elif k == 'yogurt':
-                yogurt_APs[idx, 1] = v
+            else:
+                if k in classes:
+                    subcls_APs[k][idx,1] = v
+                else:
+                    print("error class name:%s"%k)
+                    exit()
     # --plot
     iters_num = [int(x[0].split('_')[1].strip()) for x in model_infos]
     xticks = range(len(iters_num))
     xticklabels = iters_num
 
-    #plot_list = ['mAP','fg_bg_AP']+classes
-    plot_list = ['mAP', 'fg_bg_AP']
+    # -plot "all_cls_ap"/"fg_bg_ap"
+    plot_list = ['mAP', 'fg_bg_AP']  # define what we should plot
     ap_dict = {}
 
     for item in plot_list:
@@ -116,27 +102,9 @@ def main_plot_eval_results_of_models(model_infos,should_plot=True):
         elif item == 'fg_bg_AP':
             data = fg_bg_APs
             title = item
-        elif item == 'beer':
-            data = beer_APs
-            title = 'AP of %s'%item
-        elif item == 'beverage':
-            data = beverage_APs
-            title = 'AP of %s' % item
-        elif item == 'instantnoodle':
-            data = instantnoodle_APs
-            title = 'AP of %s' % item
-        elif item == 'redwine':
-            data = redwine_APs
-            title = 'AP of %s' % item
-        elif item == 'snack':
-            data = snack_APs
-            title = 'AP of %s' % item
-        elif item == 'springwater':
-            data = springwater_APs
-            title = 'AP of %s' % item
-        elif item == 'yogurt':
-            data = yogurt_APs
-            title = 'AP of %s' % item
+        else:
+            print("false input")
+            exit()
 
         ap_dict[item]=data
 
@@ -148,35 +116,27 @@ def main_plot_eval_results_of_models(model_infos,should_plot=True):
             plot_ap_trends(data, title, ax_xlabel, ax_ylabel, xticks, xticklabels, savename)
 
     # plot multi cls ap
-    cls_ap_dict = {}
-    for item in classes:
-        if item == 'beer':
-            data = beer_APs
-        elif item == 'beverage':
-            data = beverage_APs
-        elif item == 'instantnoodle':
-            data = instantnoodle_APs
-        elif item == 'redwine':
-            data = redwine_APs
-        elif item == 'snack':
-            data = snack_APs
-        elif item == 'springwater':
-            data = springwater_APs
-        elif item == 'yogurt':
-            data = yogurt_APs
-
-        cls_ap_dict[item] = data
-
     ax_xlabel = 'Iteration'
     ax_ylabel = 'AP'
     title = 'Multi classes AP'
     if should_plot:
-        plot_multi_cls_ap_trends(cls_ap_dict, title, ax_xlabel, ax_ylabel, xticks, xticklabels, 'Multi_classes_AP')
+        plot_multi_cls_ap_trends(subcls_APs, title, ax_xlabel, ax_ylabel, xticks, xticklabels, 'Multi_classes_AP')
 
-    return ap_dict,cls_ap_dict,xticks,xticklabels
+    return ap_dict,subcls_APs,xticks,xticklabels
 
-# #####################
 def plot_ap_trends(ap_data,title,xlabel,ylabel,xticks,xticklabels,savename):
+    """
+    Plot ap-iteration curve
+
+    :param ap_data:
+    :param title:
+    :param xlabel:
+    :param ylabel:
+    :param xticks:
+    :param xticklabels:
+    :param savename:
+    :return:
+    """
     _, (ax) = plt.subplots(1, 1, sharex=True)
     ax.plot(ap_data[:, 0], '-or')
     ax.plot(ap_data[:, 1], '-.ob')
@@ -203,7 +163,7 @@ def plot_ap_trends_diff_exp(test_infos,legend_names,ap_data_dict,title,xlabel,yl
     :param savename:
     :return:
     '''
-    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']*10
     _, (ax) = plt.subplots(1, 1, sharex=True)
 
     cnt = 0
@@ -228,7 +188,7 @@ def plot_ap_trends_diff_exp(test_infos,legend_names,ap_data_dict,title,xlabel,yl
     plt.savefig('%s.png'%savename)
 
 def plot_multi_cls_ap_trends(ap_data_dict,title,xlabel,ylabel,xticks,xticklabels,savename):
-    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']*10
 
     cnt = 0
     _, (ax) = plt.subplots(1, 1, sharex=True)
@@ -255,28 +215,42 @@ def plot_multi_cls_ap_trends(ap_data_dict,title,xlabel,ylabel,xticks,xticklabels
 # Main
 # #####################
 if __name__ == "__main__":
-    '''
-    # {(model_name,dataset_name),...,...}
-    #modelSets = [('yolo-voc_20000'), ('yolo-voc_40000')]
-    modelSets = make_dataset_model_only(prefix='yolo-voc-800_',test_info='nl-yolo-voc-800')
 
-    # plot evaluation results
-    main_plot_eval_results_of_models(modelSets)
+    SingleExp = False
 
+    ######################################
+    # single experiment results
 
-    exit()
-    '''
+    if SingleExp:
+        # prefix of yolo-model file (.weight)
+        ds_prefix = 'yolo-voc-800_'
+
+        # folder of predicting results (default dir: ./results/predict/)
+        ds_test = 'missfresh-yolo-voc-800'
+
+        # checkpoints of models
+        checkpoints = [2000,4000,15000]
+
+        # {(model_name,dataset_name),...,...}
+        modelSets = make_dataset_model_only(prefix=ds_prefix,test_info=ds_test,iterations=checkpoints)
+
+        # plot evaluation results
+        main_plot_eval_results_of_models(modelSets)
+
+        exit()
+
     ######################################
     # diff experiment compare
-    prefixs = ['yolo-voc-800_','yolo-voc-608_',
-               'yolo-voc_','yolo-voc-800-multiscale_',
-               'yolo-voc-608_']
-    test_infos = ['nl-yolo-voc-800','yolo-voc-608',
-                  'yolo-voc-test608','nl-yolo-voc-800-multiscale',
-                  'nl-yolo-voc-608']
-    legend_names = ['nl-yolo_imagenet_800','yolo_imagenet_608',
-                    'yolo_imagenet_test608','yolo-imagenet-800-multiscale',
-                    'nl-yolo_imagenet_608']
+
+    # prefix of yolo-models
+    prefixs = ['yolo-voc-800_']
+    # folders of predict results
+    test_infos = ['missfresh-yolo-voc-800']
+    # names of axis legend
+    legend_names = ['missfresh-yolo-voc-800']
+
+    # checkpoints of models
+    checkpoints = [2000, 4000, 15000]
 
     tot_ap_dict = {}
     tot_cls_ap_dict = {}
@@ -290,7 +264,7 @@ if __name__ == "__main__":
         xticks = ''
         xticklabels = ''
         #
-        modelsets = make_dataset_model_only(prefix=prefixs[idx],test_info=item,iterations=[10000,36000])
+        modelsets = make_dataset_model_only(prefix=prefixs[idx],test_info=item,iterations=checkpoints)
         #
         ap_dict,cls_ap_dict,xticks,xticklabels = main_plot_eval_results_of_models(modelsets,should_plot=False)
 

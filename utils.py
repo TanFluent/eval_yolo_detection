@@ -17,6 +17,16 @@ iterations_default = [25000]
 sets_default = ['train','val']
 
 def make_dataset(prefix=prefix_default,sets=sets_default,iterations=iterations_default,train_info=train_info,test_info=test_info):
+    '''
+    Make Datasets with full info
+
+    :param prefix:
+    :param sets:
+    :param iterations:
+    :param train_info:
+    :param test_info:
+    :return:
+    '''
     DataSets = []
 
     for set in sets:
@@ -26,6 +36,14 @@ def make_dataset(prefix=prefix_default,sets=sets_default,iterations=iterations_d
     return DataSets
 
 def make_dataset_model_only(prefix=prefix_default,iterations=iterations_default,test_info=test_info):
+    '''
+    Make Datasets with "model info" and "predict result info"
+
+    :param prefix: model weights prefix
+    :param iterations:
+    :param test_info: predict results info
+    :return:
+    '''
     DataSets = []
 
     for itr in iterations:
