@@ -9,6 +9,11 @@ import multiprocessing as mp
 
 from conf import *
 
+
+"""
+Run object detection on images, and get results
+"""
+
 # #############
 # Functions
 # #############
@@ -16,8 +21,12 @@ from conf import *
 def run_test(dataset,model_name,train_info,test_info,thres=0.001):
     '''
     run testing on a "dataset"
+
     :param dataset:
     :param model_name:
+    :param train_info:
+    :param test_info:
+    :param thres: confidence for a bb
     :return:
     '''
     #pdb.set_trace()
@@ -67,7 +76,9 @@ def run_test(dataset,model_name,train_info,test_info,thres=0.001):
     # --run testing
     #pdb.set_trace()
 
+    # load yolo-model
     net = load_net(model_cfg_path, model_weights_path, 0)
+    # load Experiment information
     meta = load_meta(meta_path)
 
     for idx,item in enumerate(img_names_list):
@@ -182,21 +193,23 @@ def run_test_on_testset(dataset,model_name,train_info,test_info,thres=0.001):
 
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
-    # 模型文件(.weight)前缀
+
+    # prefix of yolo-model file (.weight)
     ds_prefix = 'yolo-voc-800_'
-    # 模型文件(.weight)存储路径
+    # folder of yolo model files (default dir: ./yolo_models/)
     ds_train = 'missfresh-yolo-voc-800'
-    # 本次实验的名称(同一个模型可以用来做不同类型的实验)
+    # folder of predicting results (default dir: ./results/predict/)
     ds_test = 'missfresh-yolo-voc-800'
 
 
-    # perform object detection on these dataSets
+    # DataSets Type(train/val/test)
     #sets = ['val','train']
     sets = ['test']
+
     # checkpoints of models
     checkpoints = [15000]
 
-    # Data information
+    # Creating Dataset information
     DataSets = make_dataset(prefix=ds_prefix,train_info=ds_train,test_info=ds_test,sets=sets,iterations=checkpoints)
 
     #pdb.set_trace()

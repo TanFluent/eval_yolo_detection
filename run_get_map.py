@@ -11,17 +11,24 @@ import evaluation as my_eval
 
 from conf import *
 
+"""
+Get object detection MAPs
+"""
+
 # #############
 # Functions
 # #############
 def run_get_map(dataset,model_name,test_info):
     '''
     run testing on a "dataset"
-    :param dataset:
-    :param model_name:
+    :param dataset: train/val
+    :param model_name: yolo-model names
+    :param test_info: folder of predicting results
     :return:
     '''
-    #
+
+    # --get list of image names
+    # path of train.txt/val.txt
     dataset_file = os.path.join(dataset_dir, 'ImageSets', 'Main', '%s.txt'%dataset)
     f = open(dataset_file)
     img_names = f.readlines()
@@ -29,7 +36,7 @@ def run_get_map(dataset,model_name,test_info):
 
     img_names = [x.strip() for x in img_names]
 
-    # --get predict results
+    # --get predict results dir
     predict_results_first_lever_dir = os.path.join(wd,'results', 'predict', test_info)
     if not os.path.exists(predict_results_first_lever_dir):
         print("Folder not exist!")
@@ -46,13 +53,13 @@ def run_get_map(dataset,model_name,test_info):
         print predict_results_dir
         exit()
 
-    # --get GT
+    # --get GT dir
     gt_dir = os.path.join(dataset_dir,'dk_labels')
 
     # --calculate AP
-    mAP = 0
+    mAP = 0  # all cls map
 
-    fg_bg_AP = 0
+    fg_bg_AP = 0  # fg-bg map
 
     AP = np.zeros(len(classes))
     cls_img_count = np.zeros(len(classes))  # img numbers of each class
@@ -61,7 +68,8 @@ def run_get_map(dataset,model_name,test_info):
     for name in img_names:
         print name
         #pdb.set_trace()
-        #
+
+        # list of predict results
         predict_file = open(os.path.join(predict_results_dir,'%s.txt'%name))
         pt_list = predict_file.readlines()
         predict_file.close()
@@ -70,7 +78,8 @@ def run_get_map(dataset,model_name,test_info):
         pred_boxes = [[float(x[2]), float(x[3]), float(x[4]), float(x[5])] for x in pt_list]
         pred_class_ids = [int(x[0]) for x in pt_list]
         pred_scores = [float(x[1]) for x in pt_list]
-        #
+
+        # list of GT
         gt_file = open(os.path.join(gt_dir, '%s.txt' % name))
         gt_list = gt_file.readlines()
         gt_file.close()
@@ -87,6 +96,7 @@ def run_get_map(dataset,model_name,test_info):
         pred_class_ids = np.array(pred_class_ids)
         pred_scores = np.array(pred_scores)
         #pdb.set_trace()
+
         # convert bb format to (x1,y1,x2,y2)
         gt_boxes = convert_bb_format(gt_boxes)
         pred_boxes = convert_bb_format(pred_boxes)
@@ -121,9 +131,12 @@ def run_get_map(dataset,model_name,test_info):
                     (
                         gt_b,
                         gt_c_ids,
-                        pred_boxes,
-                        pred_class_ids,
-                        pred_scores
+                        pt_b,
+                        pt_c_ids,
+                        pt_s
+                        #pred_boxes,
+                        #pred_class_ids,
+                        #pred_scores
                     )
                 print cls_AP
                 #pdb.set_trace()
@@ -153,21 +166,22 @@ def run_get_map(dataset,model_name,test_info):
 if __name__ == "__main__":
     # {(model_name,dataset_name),...,...}
 
-    # 模型文件(.weight)前缀
+    # prefix of yolo-model file (.weight)
     ds_prefix = 'yolo-voc-800_'
 
-    # 本次实验的名称(同一个模型可以用来做不同类型的实验)
+    # folder of predicting results (default dir: ./results/predict/)
     ds_test = 'missfresh-yolo-voc-800'
 
-    # perform object detection on these dataSets
-    sets = ['val', 'train']
+    # DataSets Type(train/val)
+    #sets = ['val', 'train']
+    sets = ['train']
 
     # checkpoints of models
     checkpoints = [15000]
 
     DataSets = make_dataset(prefix=ds_prefix,test_info=ds_test,sets=sets,iterations=checkpoints)
 
-    # get predict results
+    # get MAPs
     for ds in DataSets:
         model_name = ds[0]
         dataset_name = ds[1]
