@@ -102,6 +102,7 @@ def goods_detect_urls(
     return goods_det_results_dict
 
 if __name__ == "__main__":
+
     urls = ['http://mall8.qiyipic.com/mall/20170605/fc/2e/mall_5934fa87ad8c1223bb3bfc2e_1x1.jpg']
 
     goods_detect_urls(urls)
