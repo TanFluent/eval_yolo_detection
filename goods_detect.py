@@ -14,6 +14,18 @@ from conf import *
 Run object detection on images, and get results
 """
 
+classes_id = ['image-p-qcshnt-268ml','image-p-xxwqaywsn-2h',
+              'image-p-xxwxjnn-4h','image-p-kkkl-330ml',
+              'image-p-hnwssgnyl-250ml*4','image-p-sdlwlcwt-4p',
+              'image-p-mncnn250ml','image-p-wtnmc-250ml',
+              'image-p-lfyswnc-280ml','image-p-hbahtkkwmyr-250ml',
+              'gcht','ynhlg',
+              'celxl-4','image-p-hyd-mnsnn-4h',
+              'image-p-nfnfccz-300ml','image-p-yydhgc235ml',
+              'image-p-mqtzyl-1h','image-p-nfsqcpyzlc-500ml']
+
+class_id_blacklist = [10,11,12]
+
 # #######################
 # Util
 # #######################
@@ -86,14 +98,11 @@ def goods_detect_urls(
             cls = classes.index(cls_name)
             prob = line[1]
             bb = line[2]
-            # convert bb
 
-            x = bb[0] / im_w
-            y = bb[1] / im_h
-            w = bb[2] / im_w
-            h = bb[3] / im_h
+            cls_id = classes_id[cls]
 
-            det_result.append([cls,prob,x,y,w,h])
+            if cls in class_id_blacklist:
+                det_result.append([cls_id,prob])
 
         goods_det_results_dict[url] = det_result
 
