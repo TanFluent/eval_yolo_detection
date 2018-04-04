@@ -57,6 +57,9 @@ def load_image_from_url(img_url):
 model_cfg_path = os.path.join(wd, 'material', 'cfg', 'missfresh-yolo-voc-800.cfg')
 model_weights_path = os.path.join(wd, 'material', 'yolo_models', 'missfresh-mix-yolo-voc-800', 'yolo-voc-800_2000.weights')
 meta_path = os.path.join(wd, 'material', 'cfg', '%s' % data_info)
+# --init detector
+net = load_net(model_cfg_path, model_weights_path, 0)
+meta = load_meta(meta_path)
 
 def goods_detect_urls(
         img_urls,
@@ -77,13 +80,6 @@ def goods_detect_urls(
     """
     goods_det_results_dict = {}
 
-    # --init detector
-    #pdb.set_trace()
-    net = load_net(yolo_cfg_path, yolo_weights_path, 0)
-    meta = load_meta(good_info_path)
-
-    #res = detect(net, meta, img_paths[idx], thresh=thres)
-
     for url in img_urls:
 
         det_result = []
@@ -101,7 +97,9 @@ def goods_detect_urls(
 
             cls_id = classes_id[cls]
 
-            if cls in class_id_blacklist:
+            #print(cls_id)
+
+            if cls not in class_id_blacklist:
                 det_result.append([cls_id,prob])
 
         goods_det_results_dict[url] = det_result
@@ -109,6 +107,7 @@ def goods_detect_urls(
     #print goods_det_results_dict
 
     return goods_det_results_dict
+
 
 if __name__ == "__main__":
 
