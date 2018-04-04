@@ -2,7 +2,7 @@
 
 import os,sys
 from darknet import *
-import cv2
+#import cv2
 import pdb
 from utils import *
 import multiprocessing as mp
@@ -32,6 +32,7 @@ class_id_blacklist = [10,11,12]
 import urllib
 import numpy as np
 
+'''
 def load_image_from_url(img_url):
     savepath = './tmp/img.jpg'
 
@@ -50,6 +51,18 @@ def load_image_from_url(img_url):
     cv2.imwrite(abspath,img)
 
     return img,abspath
+'''
+
+def load_image_from_url_no_cv2(img_url):
+    savepath = './tmp/img.jpg'
+
+    abspath = os.path.abspath(savepath)
+
+    # load from url
+    urllib.urlretrieve(img_url,abspath)
+
+
+    return abspath
 
 # #######################
 # Goods Detect
@@ -84,7 +97,9 @@ def goods_detect_urls(
 
         det_result = []
 
-        _,im_path = load_image_from_url(url)
+        #_,im_path = load_image_from_url(url)
+        im_path = load_image_from_url_no_cv2(url)
+
         im_path = os.path.abspath(im_path)
         res = detect(net, meta, im_path, thresh=conf_thres)
 
