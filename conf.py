@@ -1,5 +1,5 @@
 #coding: utf-8
-
+import os
 #-----实验相关配置信息-----#
 
 # working dir(当前代码所在的绝对路径)
@@ -10,6 +10,7 @@ dataset_dir = '/home/tfl/workspace/dataSet/MissFreshSmartShelf'
 
 # classes(类别名称列表)
 classes = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26']
+#classes = ['1','2','3','4','5']
 
 # 实验数据信息
 '''
@@ -20,3 +21,11 @@ names=/home/tfl/workspace/project/YI/goodsid/testing_code/material/cfg/missfresh
 backup=/mnt/lvmhdd/tanfulun/workspaces/Project/darknet-tfl/tfl/MissFreshSmartShelf/backup #模型数据存储位置(废弃)
 '''
 data_info = 'missfresh.data'
+
+# --Default Video Material
+video_name = 'Battle-20170930'
+video_key_frame_root = os.path.join(wd,'demo','video_key_frames')
+
+# --Default Video Feature Sets
+default_video_feature_sets_path = os.path.join(wd,'VIDEO_FEATURE_SETS.pkl')
+
