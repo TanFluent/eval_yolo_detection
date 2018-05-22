@@ -10,7 +10,7 @@ import multiprocessing as mp
 from conf import *
 import time
 import datetime
-
+import cv2
 
 """
 API for MissFresh Project
@@ -64,12 +64,37 @@ def load_image_from_url(img_url):
     return img,abspath
 
 
-def load_image_from_url_no_cv2(img_url,flag=True):
+def load_image_from_url_no_cv2(img_url,clahe,flag=True):
     
     save_tmp_path = './tmp/img.jpg'
+    '''
     abspath1 = os.path.abspath(save_tmp_path)
-        # load from url
+    # load from url
     urllib.urlretrieve(img_url,abspath1)
+    '''
+    #image = cv2.imread(save_tmp_path)
+    '''
+    (B, G, R) = cv2.split(image)
+
+    clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
+    B1= clahe.apply(B)
+    G1= clahe.apply(G)
+    R1= clahe.apply(R)
+    
+    aft=cv2.merge([B1, G1, R1])
+    '''
+    bgr = cv2.imread(img_url)
+
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+    
+    lab_planes = cv2.split(lab)    
+    
+    lab_planes[0] = clahe.apply(lab_planes[0])
+    
+    lab = cv2.merge(lab_planes)
+    
+    bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    cv2.imwrite(save_tmp_path,bgr)
     
     if(flag):
         save_img_path = './images/'+time.strftime("%y_%m_%d", time.localtime())+'/'
@@ -79,17 +104,19 @@ def load_image_from_url_no_cv2(img_url,flag=True):
         abspath2 = os.path.abspath(save_img)
         urllib.urlretrieve(img_url,abspath2)
 
-    return abspath1
+    return save_tmp_path
 
 # #######################
 # Goods Detect
 # #######################
 model_cfg_path = os.path.join(wd, 'material', 'cfg', 'missfresh-cls26-yolo-voc-800.cfg')
-model_weights_path = os.path.join(wd, 'material', 'yolo_models', 'missfresh-mix-yolo-voc-800', 'yolo-voc-800_24000.weights')
+model_weights_path = os.path.join(wd, 'material', 'yolo_models', 'missfresh-mix-yolo-voc-800', 'yolo-voc-800_26000.weights')
 meta_path = os.path.join(wd, 'material', 'cfg', '%s' % data_info)
 # --init detector
 net = load_net(model_cfg_path, model_weights_path, 0)
 meta = load_meta(meta_path)
+
+clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))#clipLimit=2.0,tileGridSize=(8,8)
 
 def goods_detect_urls(
         img_urls,
@@ -171,12 +198,13 @@ def goods_detect_urls_yi_plus_local_test(
 
         det_result = []
 
-        if(url[0]!='.'):
-          im_path = load_image_from_url_no_cv2(url,False)
+        if(url[0]!='0'):
+          im_path = load_image_from_url_no_cv2(url,clahe,False)
         else:
           im_path=url
-
+        
         im_path = os.path.abspath(im_path)
+        print im_path
 
         res = detect(net, meta, im_path, thresh=0.2)
 	
@@ -188,7 +216,6 @@ def goods_detect_urls_yi_plus_local_test(
             cls_name = line[0]
             cls = classes.index(cls_name)
             prob = line[1]
-	    print line[2]
             if cls not in class_id_blacklist:
                 if(len(conf_thres)==1 and prob>=conf_thres[0]):
                     num_cls[cls]+=1
@@ -210,10 +237,10 @@ def goods_detect_urls_yi_plus_local_test(
 
 if __name__ == "__main__":
 
-    #urls = ['http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/ba575e54-3e22-11e8-a283-d0817abd9fdc.jpg','http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/bbc399cc-3e22-11e8-b2da-d0817abd9fdc.jpg','http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/c20a8b62-3e22-11e8-845b-d0817abd9fdc.jpg','http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/c2c53f52-3e22-11e8-9d13-d0817abd9fdc.jpg']
+    #urls = ['http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/ba575e54-3e22-11e8-a283-d0817abd9fdc.jpg','http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/bbc399cc-3e22-11e8-b2da-d0817abd9fdc.jpg','http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/c20a8b62-3e22-11e8-845b-d0817abd9fdc.jpg']#,'http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/c2c53f52-3e22-11e8-9d13-d0817abd9fdc.jpg']
     #urls =['http://yijiaadplatform.dressplus.cn/AdPlatform/images/2018-04-12/ba575e54-3e22-11e8-a283-d0817abd9fdc.jpg']
-    urls = ['./tmp/img1.jpg','./tmp/img2.jpg','./tmp/img3.jpg','./tmp/img4.jpg','./tmp/img5.jpg']
-    each_thres=[.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.20,.65,.65,.65,.65,.50,.65,.65,.65,.65,.65,.65]
+    urls = ['./tmp/105630.jpg']
+    each_thres=[.65,.65,.65,.65,.65,.5,.65,.65,.55,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.65,.55,.65,.65,.65,.65]
     goods_detect_urls_yi_plus_local_test(urls,conf_thres=each_thres)
 
 
